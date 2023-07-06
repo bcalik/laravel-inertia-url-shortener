@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\LinkController;
+use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,15 +14,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/health', function () {
-    $headers = ['ip' => request()->ip(), 'ips' => request()->ips()] + request()->header();
-    return response()->json($headers);
-});
-
-Route::get('/{slug}', [LinkController::class, 'getSlug']);
-
-Route::get('/', function () {
-    return redirect('default');
-});
+// Prefer Laravel 4.2 style controller methods here, prefixed with the HTTP verb they respond to.
+Route::get('/health', [MainController::class, 'getHealth']);
+Route::get('/{slug}', [MainController::class, 'getSlug']);
+Route::get('/', [MainController::class, 'getIndex']);
 
 // See the routes/app.php file for the rest of the routes.
