@@ -1,44 +1,36 @@
-import {Box, Button, Center, createStyles, Group, Popover, Text, TextInput, Tooltip} from '@mantine/core';
-import React, {useState, useEffect, useCallback} from 'react';
+import { Box, Button, Center, createStyles, Group, Popover, Text, TextInput, Tooltip } from '@mantine/core';
+import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '../../Layout';
-import {InfoCircle} from "tabler-icons-react";
-import {useForm} from "@mantine/form";
-import {Inertia} from "@inertiajs/inertia";
-import {Head, Link} from '@inertiajs/inertia-react';
+import { InfoCircle } from 'tabler-icons-react';
+import { useForm } from '@mantine/form';
+import { router, Head, Link } from '@inertiajs/react';
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles(theme => ({
   inputContainer: {
     maxWidth: '420px',
     margin: 'auto',
-    "& > form > *": {
+    '& > form > *': {
       marginTop: theme.spacing.md,
     },
   },
 }));
 
-function InputWithHelp({inputLabel, inputPlaceholder, tooltipLabel, ...props}) {
+function InputWithHelp({ inputLabel, inputPlaceholder, tooltipLabel, ...props }) {
   const rightSection = (
-    <Tooltip
-      label={tooltipLabel} wrapLines width={300} placement="end" withArrow transition="pop-bottom-right"
-    >
-      <Text color="dimmed" sx={{cursor: 'help'}}>
+    <Tooltip label={tooltipLabel} wrapLines width={300} placement="end" withArrow transition="pop-bottom-right">
+      <Text color="dimmed" sx={{ cursor: 'help' }}>
         <Center>
-          <InfoCircle size={18}/>
+          <InfoCircle size={18} />
         </Center>
       </Text>
     </Tooltip>
   );
 
-  return (
-    <TextInput
-      rightSection={rightSection} label={inputLabel} placeholder={inputPlaceholder}
-      {...props}
-    />
-  );
+  return <TextInput rightSection={rightSection} label={inputLabel} placeholder={inputPlaceholder} {...props} />;
 }
 
-const CreateLink = ({link, errors}) => {
-  const {classes, cx} = useStyles();
+const CreateLink = ({ link, errors }) => {
+  const { classes, cx } = useStyles();
   const [deletePopupOpened, setDeletePopupOpened] = useState(false);
 
   const form = useForm({
@@ -57,29 +49,28 @@ const CreateLink = ({link, errors}) => {
     form.setErrors(errors);
   }, [errors]);
 
-  const handleSubmit = useCallback((values) => {
-    if (link?.id) {
-      Inertia.post(`/app/links/edit/${link.id}`, values);
-      return;
-    }
+  const handleSubmit = useCallback(
+    values => {
+      if (link?.id) {
+        router.post(`/app/links/edit/${link.id}`, values);
+        return;
+      }
 
-    Inertia.post('/app/links/create', values);
-  }, [link]);
+      router.post('/app/links/create', values);
+    },
+    [link]
+  );
 
   return (
     <Box className={classes.inputContainer}>
       <Head>
-        <title>
-          {link?.id
-            ? "Edit Link"
-            : "Create Link"
-          }
-        </title>
+        <title>{link?.id ? 'Edit Link' : 'Create Link'}</title>
       </Head>
 
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <InputWithHelp
-          inputLabel="Link Slug" tooltipLabel="Leave empty to generate random slug."
+          inputLabel="Link Slug"
+          tooltipLabel="Leave empty to generate random slug."
           {...form.getInputProps('slug')}
         />
         <InputWithHelp
@@ -114,7 +105,7 @@ const CreateLink = ({link, errors}) => {
         />
 
         <Group position="right" mt="md">
-          {link?.id &&
+          {link?.id && (
             <Popover
               opened={deletePopupOpened}
               onClose={() => setDeletePopupOpened(false)}
@@ -123,30 +114,32 @@ const CreateLink = ({link, errors}) => {
               withArrow
             >
               <Popover.Target>
-                <Button color="red" onClick={() => setDeletePopupOpened((o) => !o)}>Delete</Button>
+                <Button color="red" onClick={() => setDeletePopupOpened(o => !o)}>
+                  Delete
+                </Button>
               </Popover.Target>
               <Popover.Dropdown>
-                <div style={{display: "flex"}}>
+                <div style={{ display: 'flex' }}>
                   <Text size="sm">Are you sure you want to delete?</Text>
                   <Link href={`/app/links/delete/${link.id}`} method="delete">
-                    <Button color="red" onClick={() => setDeletePopupOpened((o) => !o)}>Yes!</Button>
+                    <Button color="red" onClick={() => setDeletePopupOpened(o => !o)}>
+                      Yes!
+                    </Button>
                   </Link>
                 </div>
               </Popover.Dropdown>
             </Popover>
-          }
+          )}
 
           <Button type="submit">Submit</Button>
         </Group>
       </form>
     </Box>
   );
-}
+};
 
 CreateLink.layout = page => {
-  return !page.props.link
-    ? <Layout children={page} title={"Create Link"}/>
-    : <Layout children={page} title={"Edit Link"}/>;
-}
+  return !page.props.link ? <Layout children={page} title={'Create Link'} /> : <Layout children={page} title={'Edit Link'} />;
+};
 
 export default CreateLink;

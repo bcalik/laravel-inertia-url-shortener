@@ -1,23 +1,13 @@
 import React, { useState } from 'react';
-import {
-  createStyles,
-  Header,
-  Container,
-  Group,
-  Burger,
-  Paper,
-  Transition,
-  Alert,
-  Notification,
-} from '@mantine/core';
+import { createStyles, Header, Container, Group, Burger, Paper, Transition, Alert, Notification } from '@mantine/core';
 import { useToggle } from '@mantine/hooks';
-import { Link as InertiaLink, usePage } from '@inertiajs/inertia-react'
-import { ThemeToggle } from "./Components/ThemeToggle";
+import { Link as InertiaLink, usePage } from '@inertiajs/react';
+import { ThemeToggle } from './Components/ThemeToggle';
 import { AlertCircle, Check } from 'tabler-icons-react';
 
 const HEADER_HEIGHT = 60;
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles(theme => ({
   root: {
     position: 'relative',
     zIndex: 1,
@@ -105,29 +95,28 @@ export default function LayoutContent(props) {
 
   const menuItems = [
     {
-      "href": "/app",
-      "title": "Links"
+      href: '/app',
+      title: 'Links',
     },
     {
-      "href": "/app/links/create",
-      "title": "Create Link"
-    }
+      href: '/app/links/create',
+      title: 'Create Link',
+    },
   ];
 
   const [opened, toggleOpened] = useToggle();
-  const {classes, cx} = useStyles();
+  const { classes, cx } = useStyles();
 
   const [colorScheme, setColorScheme] = useState('light');
-  const toggleColorScheme = (value) =>
-    setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark'));
+  const toggleColorScheme = value => setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark'));
 
-  const items = menuItems.map((menuItem) => (
+  const items = menuItems.map(menuItem => (
     <InertiaLink
       key={menuItem.title}
       href={menuItem.href}
-      className={cx(classes.menuItem, {[classes.menuItemActive]: props.title === menuItem.title})}
+      className={cx(classes.menuItem, { [classes.menuItemActive]: props.title === menuItem.title })}
       onClick={() => {
-        toggleOpened(false)
+        toggleOpened(false);
       }}
     >
       {menuItem.title}
@@ -138,22 +127,22 @@ export default function LayoutContent(props) {
     <>
       <Header className={classes.root}>
         <Container size="lg" className={classes.header}>
-          <Burger
-            opened={opened} onClick={() => toggleOpened()} className={classes.burger} size="sm"
-          />
+          <Burger opened={opened} onClick={() => toggleOpened()} className={classes.burger} size="sm" />
 
           <Group spacing={5}>
-            <InertiaLink href="/app" className={classes.logo}>{appName}</InertiaLink>
+            <InertiaLink href="/app" className={classes.logo}>
+              {appName}
+            </InertiaLink>
 
             <Group spacing={5} className={classes.menuItems}>
               {items}
             </Group>
           </Group>
 
-          <ThemeToggle/>
+          <ThemeToggle />
 
           <Transition transition="pop-top-right" duration={200} mounted={opened}>
-            {(styles) => (
+            {styles => (
               <Paper className={classes.dropdown} withBorder style={styles}>
                 {items}
               </Paper>
