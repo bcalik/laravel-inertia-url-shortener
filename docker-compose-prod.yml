@@ -1,0 +1,16 @@
+version: '3.5'
+
+services:
+    short:
+        image: registry.macellan.net/macellan/macellan-short:latest
+        container_name: short
+        restart: always
+        ports:
+            - "8002:80"
+        environment:
+            - APP_NAME="Short"
+            - DB_CONNECTION=pgsql
+            - DB_HOST=host.docker.internal
+            - DB_USERNAME=postgres
+            - DB_PASSWORD=
+            - DB_DATABASE=short

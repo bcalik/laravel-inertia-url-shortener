@@ -1,0 +1,105 @@
+stages:
+  - build
+  - test
+  - release
+  - deploy
+
+variables:
+  POSTGRES_DB: homestead
+  POSTGRES_USER: homestead
+  POSTGRES_PASSWORD: root
+
+image: registry.macellan.net/docker-images/php-nginx:8.1-bullseye
+
+#########################
+# Build
+#########################
+install dependencies:
+  stage: build
+  tags:
+    - docker_runner
+  script:
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+    - npm ci
+    - npm run production
+  after_script:
+    - cat ~/.npm/_logs/*.log
+  artifacts:
+    paths:
+      - vendor/
+      - node_modules/
+      - public/dist/
+      - public/mix-manifest.json
+    expire_in: 1 day
+    when: always
+  cache:
+    paths:
+      - vendor/
+      - node_modules/
+
+# #########################
+# # Test: Code Quality
+# #########################
+# code quality:
+#   stage: test
+#   tags:
+#     - docker_runner
+#   script:
+#     - vendor/bin/phpcs -n --runtime-set ignore_warnings_on_exit true --standard=phpcs.xml .
+
+#########################
+# Test: PHPUnit
+#########################
+.phpunit_template: &phpunit_template_definition
+  stage: test
+  tags:
+    - docker_runner
+  dependencies:
+    - install dependencies
+  after_script:
+    - cat ./storage/logs/laravel.log
+
+phpunit postgres:
+  <<: *phpunit_template_definition
+  services:
+    - name: postgres:latest
+      alias: postgres
+  script:
+    - cp .gitlab/.env.testing-postgres .env.testing
+    - php artisan key:generate --force --env=testing
+    - php artisan optimize:clear --env=testing
+    - php artisan test --env=testing
+
+#########################
+# Release Process
+#########################
+build docker image:
+  stage: release
+  tags:
+    - shell_runner
+  only:
+    - tags
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo ${CI_COMMIT_TAG} > VERSION
+    - docker build --pull
+      -t registry.macellan.net/macellan/macellan-short:${CI_COMMIT_TAG}
+      -t registry.macellan.net/macellan/macellan-short:latest .
+    - docker push --all-tags registry.macellan.net/macellan/macellan-short
+  after_script:
+    - docker rmi -f $(docker images -q registry.macellan.net/macellan/macellan-short) || true
+
+#########################
+# Deployment
+#########################
+deploy altpay-prod:
+  stage: deploy
+  environment:
+    name: altpay-prod
+  only: [tags]
+  tags:
+    - altpay_prod_runner
+  when: manual
+  script:
+    - bash ./.gitlab/deploy-production.sh "${SERVER_ALTPAY_PROD_2_IP}" "${CI_COMMIT_TAG}" altpay_services_short

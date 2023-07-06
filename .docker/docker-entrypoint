@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+cp /var/www/html/.env.prod /var/www/html/.env
+
+php artisan key:generate --force
+php artisan optimize
+php artisan migrate --force
+
+chmod -R 777 /var/www/html/storage/ \
+             /var/www/html/bootstrap/cache/
+
+exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
