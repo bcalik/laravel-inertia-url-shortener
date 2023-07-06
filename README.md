@@ -21,8 +21,8 @@ composer install
 # Generate app key
 ./vendor/bin/sail artisan key:generate
 
-# Run database migrations
-./vendor/bin/sail artisan migrate
+# Run database migrations and seeder
+./vendor/bin/sail artisan migrate --seed
 
 # Install npm dependencies
 npm install
